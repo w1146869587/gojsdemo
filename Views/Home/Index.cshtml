@@ -1,0 +1,23 @@
+﻿@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Index</title>
+    <link href='@Url.Content("~/Content/Css/GoJsTest.css")' rel="stylesheet" />
+</head>
+<body>
+    <div id="myDragramDiv">
+    </div>
+</body>
+    <script src='@Url.Content("~/components/gojs/go.js")'></script>
+    <script src='@Url.Content("~/Scripts/GoJsTest.js")'></script>
+    <script>
+        var gojs = new GoJsTest();
+        gojs.InitUI();
+    </script>
+</html>
