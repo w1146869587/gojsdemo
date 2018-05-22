@@ -3,9 +3,9 @@
     var myDiagram = null;
     var objGo = null;
     this.InitUI = function () {
-        InitGoJs2();
+        InitGoJs3();
     }
-    function InitGoJs() {
+    function InitGoJs1() {
 
         if (window.goSamples) goSamples();  // init for these samples -- you don't need to call this
         objGo = go.GraphObject.make;  // for conciseness in defining templates
@@ -42,20 +42,20 @@
         });
 
         // when the document is modified, add a "*" to the title and enable the "Save" button
-        myDiagram.addDiagramListener("Modified", function (e) {
-            var button = document.getElementById("SaveButton");
-            if (button) button.disabled = !myDiagram.isModified;
-            var idx = document.title.indexOf("*");
-            if (myDiagram.isModified) {
-                if (idx < 0) document.title += "*";
-            } else {
-                if (idx >= 0) document.title = document.title.substr(0, idx);
-            }
-        });
+        //myDiagram.addDiagramListener("Modified", function (e) {
+        //    var button = document.getElementById("SaveButton");
+        //    if (button) button.disabled = !myDiagram.isModified;
+        //    var idx = document.title.indexOf("*");
+        //    if (myDiagram.isModified) {
+        //        if (idx < 0) document.title += "*";
+        //    } else {
+        //        if (idx >= 0) document.title = document.title.substr(0, idx);
+        //    }
+        //});
 
         // manage boss info manually when a node or link is deleted from the diagram
         myDiagram.addDiagramListener("SelectionDeleting", function (e) {
-            alert("SelectionDeleting");
+            
             var part = e.subject.first(); // e.subject is the myDiagram.selection collection,
             // so we'll get the first since we know we only have one selection
             myDiagram.startTransaction("clear boss");
@@ -345,6 +345,7 @@
         myDiagram.model = go.Model.fromJson(aa);
     }
     /////////////////////////
+    function InitGoJs2() {
         if (window.goSamples) goSamples();   
         objGo = go.GraphObject.make;
         // 画布
@@ -357,18 +358,165 @@
         // 模型数据
         var myModel = objGo(go.Model);
         myModel.nodeDataArray = [
-            { key:"Alpha" },
-            { key:"Beta"},
-            { key: "Gamma" }
+            { key:"Alpha",fig:"asfasf" },
+            { key: "Beta", fig: "www" },
+            { key: "Gamma", fig: "asfaaaasf" }
         ];
 
         myDiagram.model = myModel;
+ 
+        myDiagram.nodeTemplate =
+            objGo(go.Node, "Vertical", new go.Binding("location", "loc"), objGo(go.Shape, "RoundedRectangle", new go.Binding("figure", "fig")),
+            objGo(go.TextBlock,"default text", new go.Binding("text", "key"))  );  
+    }
 
-        myDiagram.nodeTemplate = objGo(
-            go.node,objGo(go.TextBlock,new go.Binding('text',"key"))
-            );
+    function InitGoJs3() {
+        if (window.goSamples) goSamples();  // init for these samples -- you don't need to call this
+          objGo = go.GraphObject.make;  // for conciseness in defining templates
+
+        myDiagram =
+          objGo(go.Diagram, "myDragramDiv",  // create a Diagram for the DIV HTML element
+          {
+              initialContentAlignment: go.Spot.Center,
+              "undoManager.isEnabled": true
+           });
+
+        // This is the actual HTML context menu:
+        var cxElement = document.getElementById("contextMenu");
+
+        function showContextMenu(obj, diagram, tool) {
+
+            
+           
+            // Show only the relevant buttons given the current state.
+            var cmd = diagram.commandHandler;
+            if (obj.data.key == "Beta") {
+                document.getElementById("cut").style.display = "none";
+                document.getElementById("copy").style.display = "none";
+                document.getElementById("paste").style.display = "none";
+                document.getElementById("delete").style.display = "none";
+            }
+            else {
+                document.getElementById("cut").style.display = "block";
+                document.getElementById("copy").style.display = "none";
+                document.getElementById("paste").style.display = "none";
+                document.getElementById("delete").style.display = "block";
+            }
+            
+       
+            document.getElementById("color").style.display = (obj !== null ? "block" : "none");
+
+            // Now show the whole context menu element
+            cxElement.style.display = "block";
+            // we don't bother overriding positionContextMenu, we just do it here:
+            var mousePt = diagram.lastInput.viewPoint;
+            cxElement.style.left = mousePt.x + "px";
+            cxElement.style.top = mousePt.y + "px";
+        }
+        // Since we have only one main element, we don't have to declare a hide method,
+        // we can set mainElement and GoJS will hide it automatically
+        var myContextMenu = objGo(go.HTMLInfo, {
+            show: showContextMenu,
+            mainElement: cxElement
+        });
+
+        // define a simple Node template (but use the default Link template)
+        myDiagram.nodeTemplate =
+          objGo(go.Node, "Auto",
+            { contextMenu: myContextMenu },
+            objGo(go.Shape, "RoundedRectangle",
+              // Shape.fill is bound to Node.data.color
+              new go.Binding("fill", "color")),
+            objGo(go.TextBlock,
+              { margin: 3 },  // some room around the text
+              // TextBlock.text is bound to Node.data.key
+              new go.Binding("text", "key"))
+          );
 
 
+
+        myDiagram.addDiagramListener("SelectionDeleting", function (e) {
+
+            var part = e.subject.first(); // e.subject is the myDiagram.selection collection,
+            // so we'll get the first since we know we only have one selection
+            myDiagram.startTransaction("clear boss");
+            if (part instanceof go.Node) {
+                var it = part.findTreeChildrenNodes(); // find all child nodes
+                while (it.next()) { // now iterate through them and clear out the boss information
+                    var child = it.value;
+                    var bossText = child.findObject("boss"); // since the boss TextBlock is named, we can access it by name
+                    if (bossText === null) return;
+                    bossText.text = "";
+                }
+            } else if (part instanceof go.Link) {
+                var child = part.toNode;
+                var bossText = child.findObject("boss"); // since the boss TextBlock is named, we can access it by name
+                if (bossText === null) return;
+                bossText.text = "";
+            }
+            myDiagram.commitTransaction("clear boss");
+        });
+
+        // create the model data that will be represented by Nodes and Links
+        myDiagram.model = new go.GraphLinksModel(
+        [
+          { key: "Alpha", color: "crimson" },
+          { key: "Beta", color: "chartreuse" },
+          { key: "Gamma", color: "aquamarine" },
+          { key: "Delta", color: "gold" }
+        ],
+        [
+          { from: "Alpha", to: "Beta" },
+          { from: "Alpha", to: "Gamma" },
+          { from: "Beta", to: "Beta" },
+          { from: "Gamma", to: "Delta" },
+          { from: "Delta", to: "Alpha" }
+        ]);
+
+        myDiagram.contextMenu = myContextMenu;
+
+        // We don't want the div acting as a context menu to have a (browser) context menu!
+        cxElement.addEventListener("contextmenu", function (e) {
+           
+            e.preventDefault();
+            return false;
+        }, false);
+
+       
 
     }
+
+    // This is the general menu command handler, parameterized by the name of the command.
+    function cxcommand(event, val) {
+        if (val === undefined) val = event.currentTarget.id;
+        var diagram = myDiagram;
+        switch (val) {
+            case "cut": diagram.commandHandler.cutSelection(); break;
+            case "copy": diagram.commandHandler.copySelection(); break;
+            case "paste": diagram.commandHandler.pasteSelection(diagram.lastInput.documentPoint); break;
+            case "delete": diagram.commandHandler.deleteSelection(); break;
+            case "color": {
+                var color = window.getComputedStyle(document.elementFromPoint(event.clientX, event.clientY).parentElement)['background-color'];
+                changeColor(diagram, color); break;
+            }
+        }
+        diagram.currentTool.stopTool();
+    }
+
+    // A custom command, for changing the color of the selected node(s).
+    function changeColor(diagram, color) {
+        // Always make changes in a transaction, except when initializing the diagram.
+        diagram.startTransaction("change color");
+        diagram.selection.each(function (node) {
+            if (node instanceof go.Node) {  // ignore any selected Links and simple Parts
+                // Examine and modify the data, not the Node directly.
+                var data = node.data;
+                // Call setDataProperty to support undo/redo as well as
+                // automatically evaluating any relevant bindings.
+                diagram.model.setDataProperty(data, "color", color);
+            }
+        });
+        diagram.commitTransaction("change color");
+    }
+
 }
