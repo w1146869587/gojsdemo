@@ -3,7 +3,7 @@
     var myDiagram = null;
     var objGo = null;
     this.InitUI = function () {
-        InitGoJs();
+        InitGoJs2();
     }
     function InitGoJs() {
 
@@ -343,5 +343,32 @@
 
 
         myDiagram.model = go.Model.fromJson(aa);
+    }
+    /////////////////////////
+        if (window.goSamples) goSamples();   
+        objGo = go.GraphObject.make;
+        // 画布
+        myDiagram = objGo(go.Diagram, "myDragramDiv", {
+            initialContentAlignment: go.Spot.Center,
+            // 模型图的中心位置所在坐标
+            "undoManager.isEnabled": true
+            // 启用Ctrl-Z撤销和Ctrl-Y重做快捷键
+        });
+        // 模型数据
+        var myModel = objGo(go.Model);
+        myModel.nodeDataArray = [
+            { key:"Alpha" },
+            { key:"Beta"},
+            { key: "Gamma" }
+        ];
+
+        myDiagram.model = myModel;
+
+        myDiagram.nodeTemplate = objGo(
+            go.node,objGo(go.TextBlock,new go.Binding('text',"key"))
+            );
+
+
+
     }
 }
