@@ -390,6 +390,10 @@
            
             // Show only the relevant buttons given the current state.
             var cmd = diagram.commandHandler;
+            if (obj == null)
+            {
+                return;
+            }
             if (obj.data.key == "Beta") {
                 document.getElementById("cut").style.display = "none";
                 document.getElementById("copy").style.display = "none";
@@ -401,9 +405,7 @@
                 document.getElementById("copy").style.display = "none";
                 document.getElementById("paste").style.display = "none";
                 document.getElementById("delete").style.display = "block";
-            }
-            
-       
+            } 
             document.getElementById("color").style.display = (obj !== null ? "block" : "none");
 
             // Now show the whole context menu element
