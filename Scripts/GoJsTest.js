@@ -3,7 +3,7 @@
     var myDiagram = null;
     var objGo = null;
     this.InitUI = function () {
-        InitGoJs3();
+        InitGoJs1();
     }
     function InitGoJs1() {
 
@@ -319,9 +319,8 @@
     }
     function load() {
 
-        var aa = {
-            "class": "go.TreeModel",
-            "nodeDataArray": [
+      
+           var nodeDataArray = [
           { "key": 1, "name": "Stella Payne Diaz", "title": "CEO" },
           { "key": 2, "name": "Luke Warm", "title": "VP Marketing/Sales", "parent": 1 },
           { "key": 3, "name": "Meg Meehan Hoffa", "title": "Sales", "parent": 2 },
@@ -339,10 +338,24 @@
           { "key": 15, "name": "Evan Elpus", "title": "Quality", "parent": 5 },
           { "key": 16, "name": "Lotta B. Essen", "title": "Sales Rep", "parent": 3 }
             ]
-        }
+       
+           var linkDataArray = [
+              {from :1,to:2 },
+              {from :1,to:3 },
+              {from :1,to:4 },
+              {from :1,to:5},
+              { from: 6, to: 1 },
+              { from: 7, to: 1 },
+              { from: 8, to: 1 },
+              { from: 9, to: 1 },
+             
+           ];
 
 
-        myDiagram.model = go.Model.fromJson(aa);
+          myDiagram.model.nodeDataArray = nodeDataArray; //model.nodeDataArray存储node的数据
+          myDiagram.model.linkDataArray = linkDataArray; //model.linkDataArray存储Link的数据
+
+       // myDiagram.model = go.Model.fromJson(aa);
     }
     /////////////////////////
     function InitGoJs2() {
